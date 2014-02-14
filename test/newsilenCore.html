@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<title>NEW SILEN CORE</title>
+	<script type="text/javascript" src="D:/PROJECTS/NS/trunk/NewSilen/WebContent/WEB-INF/jsunit/app/jsUnitCore.js"></script>
+	<script type="text/javascript" src="../src/newsilen.js"></script>
+	<script type="text/javascript">
+		function testIsExistS(){
+			assertNotNull('S should exist.',S);
+			assertNotNull('newsilen should exist.',newsilen);
+		}
+
+		function testPassNone(){
+			assertEquals('Return S when no args passed.',S(),S);
+		}
+		
+		function testPassAnArray(){
+			var a = [3,4];
+			assertTrue(S(a) instanceof S.Array);
+			assertEquals('method get will return the array.',S(a).get(),a);
+		}
+		
+		/* function testMoreThanOneArgs(){
+			function t(a,b){
+				this.A=a;
+				this.B=b;
+			}
+			
+			var x = S(t,3,4);
+			assertTrue('x is an instanceof t.',x instanceof t);
+			assertEquals('',x.A,3); --failed
+		} */
+		// keep
+		function testPassAString(){
+			var a = document.createElement('INPUT');
+			a.id='s';
+			document.appendChild(a);
+			assertEquals('',a.id,'s');
+			var i = S('s');
+			assertTrue('a is an instanceof INPUT.',i instanceof S.Input);
+			assertEquals('',i.get(),a);
+			a.value=45;
+			assertEquals('the value should equal.',i.val(),'45');
+			i.val(23);
+			assertEquals('the value should equal.',i.val(),'23');
+		}
+
+		function testPassAnInput(){
+			var i = document.getElementById('ipt');
+			var ip = S(i);
+			assertTrue('should be an instanceof s.input',ip instanceof S.Input);
+			assertEquals('should return the input.',ip.get(),i);
+		}
+		
+		function testPassASelect(){
+			var i = document.getElementById('sel');
+			var ip = S(i);
+			assertTrue('should be an instanceof S.Select',ip instanceof S.Select);
+			assertEquals('should return the select.',ip.get(),i);
+		}
+		
+		function testPassAForm(){
+			var i = document.getElementById('fm');
+			var ip = S(i);
+			assertTrue('should be an instanceof S.Form',ip instanceof S.Form);
+			assertEquals('should return the Form.',ip.get(),i);
+		}
+		
+		function testArrayUnique(){
+			var a = [1,4,1,2];
+			var b = S(a).unique();
+			assertTrue('return an instanceof S.Array',b instanceof S.Array);//or an array?
+			assertEquals('b.length is 3',b.get().length,3);
+			assertEquals('b[0]==1',b.get()[0],1);
+			assertEquals('b[1]==4',b.get()[1],4);
+			assertEquals('b[2]==2',b.get()[2],2);
+		}
+		
+		function testArrayEach(){
+			var a = [3,4,5];
+			var b=[];
+			S(a).each(function(i,n){
+				b[i]=n+3;
+				//this.get()[i]=n+1;
+			});
+			assertEquals('b[0]==6',b[0],6);
+			assertEquals('b[1]==7',b[1],7);
+			assertEquals('b[2]==8',b[2],8);
+			
+			var c;
+			S(a).each(function(i,n,f){
+				c=f;
+			});
+			assertEquals('c is a',c,a);
+			// 下面的是不成立的，对于字符串和数字这些基本类型，执行call方法之后用严格等于进行比较是无法通过的
+			/*
+			var d=[];
+			S(a).each(function(i){
+				d[i]=this;
+			});
+			assertEquals('d[0]==3',d[0],3);
+			assertEquals('d[1]==4',d[1],4);
+			assertEquals('d[2]==5',d[2],5);
+			*/
+			var e = [];
+			S(a).each(function(i,n){
+				e[i]=n;
+				return false;
+			});
+			assertEquals('e.length eq 1',e.length,1);
+			assertEquals('e[0]==3',e[0],3);
+		}
+		
+		function testExtend(){
+			var a = {};
+			S.extend(a,{f:1});
+			assertEquals('a.f==1',a.f,1);
+			
+			var b = {a:4};
+			S.extend(b,{a:1});
+			assertEquals('b.a==1',b.a,1);
+			
+			function c(x){
+				this.x=x;
+			}
+			var d = new c(3);
+			S.extend(d,{x:4});
+			assertEquals('d.x==4',d.x,4);
+			
+			S.extend(c,{f:4});
+			assertEquals('c.f eq 4.',c.f,4);
+		}
+		
+		function testData(){
+			var i = document.getElementById('ipt');
+			S(i).data('test',24567);
+			assertNotNull('data should exist.',S(i).data('test'));
+			assertEquals('data eq 24567',S(i).data('test'),24567);
+			var d = {f:1,ff:"aaa"}
+			S(i).data('test',d);
+			assertEquals('data eq 24567',S(i).data('test'),d);
+			assertEquals('data eq 24567',S(i).data('test').f,1);
+			assertEquals('data eq 24567',S(i).data('test').ff,"aaa");
+		}
+		
+		function testPool(){
+			var testD={locationA:{}};
+			var i=0;
+			function Person(seq){this.seq=seq;}
+			testD.locationA.personPool=new S.pool({poolSize:4,newInstance:function(){return new Person(++i);}});
+			assertNotNull('pool should exist.',testD.locationA.personPool);
+			var p = testD.locationA.personPool.get();
+			assertNotNull('instance should exist.',p);
+			assertTrue('should be the instance of Person',p instanceof Person);
+			assertEquals('should be the first instance of Person',p.seq,1);
+			assertEquals('the pool has three object last.',testD.locationA.personPool.pool.length,3);
+			testD.locationA.personPool.get();
+			testD.locationA.personPool.get();
+			testD.locationA.personPool.get();
+			var p5 = testD.locationA.personPool.get();//init occur.
+			assertEquals('should be the fifth instance of Person.',p5.seq,5);
+			testD.locationA.personPool.free(p);
+			assertEquals('the pool has three object last.',testD.locationA.personPool.pool.length,4);
+			testD.locationA.personPool.free(p5);
+			assertEquals('the pool has three object last.',testD.locationA.personPool.pool.length,5);
+		}
+		
+		function testAjax(){
+			
+			
+		}
+	</script>
+</head>
+<body>
+	<form action="" id="fm" name="fnName">
+		<input type="text" value="10" id="ipt" name="ipt"/>
+		<select id="sel" name="sel">
+			<optgroup label="亚洲">
+				<option value="China">中国</option>
+				<option value="Russia">俄罗斯</option>
+			</optgroup>
+		</select>
+	</form>
+</body>
+</html>
