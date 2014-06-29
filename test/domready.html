@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>Dom Ready</title>
+
+		<script type="text/javascript" src="../src/newsilen.core.js"></script>
+		<script type="text/javascript" src="../src/newsilen.domready.js"></script>
+		<script type="text/javascript">
+			newsilen.ready(function(){
+				console.log('ready before.');
+			});
+		</script>
+	</head>
+	<body>
+		<img id="image1" src="http://192.168.1.151:8089/img.php" onload="imgLoad()">
+		添加很多方法，在dom ready后一次执行，先添加的先执行
+	</body>
+	<script type="text/javascript">
+
+		function imgLoad(){
+			console.log('Img Load');
+		}
+		document.onreadystatechange=function(){
+			console.log(document.readyState);
+		}
+
+		document.addEventListener('DOMContentLoaded',function(){
+			console.log('DOMContentLoaded');
+		});
+
+		window.addEventListener('load',function(){
+			console.log('load');
+		});
+	</script>
+
+	<script type="text/javascript">
+		newsilen.ready(function(){
+			console.log('ready 1.');
+		});
+
+		newsilen.ready(function(){
+			console.log('ready 2.');
+		});
+
+
+		setTimeout(function(){
+			newsilen.ready(function(){
+			console.log('ready lazy.');
+		});
+		},4000)
+	</script>
+</html>
